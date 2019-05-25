@@ -1,12 +1,15 @@
 // ==UserScript==
 // @name         AntiSTB
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Fuck Starlight group
 // @author       oPOCCOMAXAo
-// @match        https://*.stb.ua/*
-// @include      https://*.stb.ua/*
+// @match        https://*.stb.ua/*/
+// @include      https://*.stb.ua/*/
 // @exclude      https://*.stb.ua/vplayer/*
+// @exclude      https://*.stb.ua/*.mp4
+// @exclude      https://antistb.mircloud.us/*
+// @exclude      http://antistb.mircloud.us/*
 // ==/UserScript==
 function get(){
     let xhr = new XMLHttpRequest();
@@ -17,9 +20,10 @@ function get(){
             show(obj.url, obj.name);
         } catch(e) {}
     }
-    xhr.onerror = get;
+    xhr.onerror = restart;
     xhr.send();
 }
+function restart() {setTimeout(get, 5000)}
 function show(url, name){
     let a = document.createElement("a");
     a.className = "btn";
