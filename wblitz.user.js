@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         wblitz stream collector
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  run blitz stream
 // @author       oPOCCOMAXAo
 // @match        https://wotblitz.ru/*
@@ -24,7 +24,7 @@ function onopen(){
 function onmessage(msg){
     setTimeout(send, 1000);
     let t = JSON.parse(msg.data).data;
-    document.title = Math.round(JSON.parse(msg.data).data / 60) * 500 + " " + t;
+    document.title = Math.floor(JSON.parse(msg.data).data / 60) * 500 + " " + t;
 }
 window.start = start;
 start();
