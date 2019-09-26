@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         wblitz stream collector
 // @namespace    http://tampermonkey.net/
-// @version      0.5
+// @version      0.6
 // @description  run blitz stream
 // @author       oPOCCOMAXAo
 // @match        https://wotblitz.ru/*
@@ -16,16 +16,12 @@ function start(){
     ws.onopen = onopen;
     ws.onmessage = onmessage;
 }
-function send(){
-    ws.send('{\"command\":\"watching\"}');
-}
-function onopen(){
-    ws.send('{\"command\":\"close\"}');
-}
-function onmessage(msg){
-    setTimeout(send, 1000);
+function send() { ws.send('{\"command\":\"watching\"}'); }
+function onopen() { ws.send('{\"command\":\"close\"}'); }
+function onmessage(msg) {
     let t = JSON.parse(msg.data).data;
-    document.title = Math.floor(JSON.parse(msg.data).data / 1800) + " конт. " + t;
+    document.title = Math.floor(t / 1800) + " конт. " + t;
 }
+setInterval(send, 2000);
 window.start = start;
 start();
