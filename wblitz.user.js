@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         wblitz stream collector
 // @namespace    http://tampermonkey.net/
-// @version      0.8
+// @version      0.9
 // @description  run blitz stream
 // @author       oPOCCOMAXAo
 // @match        https://ru.wotblitz.com/*
