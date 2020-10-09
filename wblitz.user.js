@@ -9,7 +9,7 @@
 // @grant        none
 // ==/UserScript==
 
-let url = "wss://ru.wotblitz.com/tournament-season/watch/326d21bc28fb43abb59e33b4bf36c998/";
+let url = "wss://ru.wotblitz.com/tournament-season/watch/8adfde840b1644b196930697d409227b/";
 let ws = null;
 function start(){
     ws = new WebSocket(url);
