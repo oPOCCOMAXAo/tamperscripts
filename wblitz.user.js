@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         wblitz stream collector
 // @namespace    http://tampermonkey.net/
-// @version      0.9
+// @version      0.10
 // @description  run blitz stream
 // @author       oPOCCOMAXAo
 // @match        https://ru.wotblitz.com/*
@@ -9,7 +9,7 @@
 // @grant        none
 // ==/UserScript==
 
-let url = "wss://ru.wotblitz.com/tournament-season/watch/8adfde840b1644b196930697d409227b/";
+let url = "wss://ru.wotblitz.com/tournament-season/watch/1b7ecd13ab88460ca1c7d97735698ab3/";
 let ws = null;
 function start(){
     ws = new WebSocket(url);
