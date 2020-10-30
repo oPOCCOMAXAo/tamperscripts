@@ -19,7 +19,7 @@ function start(){
 function send() { ws.send('{\"operation\":\"watching\"}'); }
 function onopen() { ws.send('{\"operation\":\"close\"}'); }
 function onmessage(msg) {
-    let t = JSON.parse(msg.data).data;
+    let t = JSON.parse(msg.data).time;
     document.title = t + " сек";
 }
 setInterval(send, 2000);
