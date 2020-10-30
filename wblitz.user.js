@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         wblitz stream collector
 // @namespace    http://tampermonkey.net/
-// @version      0.10
+// @version      0.11
 // @description  run blitz stream
 // @author       oPOCCOMAXAo
 // @match        https://ru.wotblitz.com/*
@@ -9,15 +9,15 @@
 // @grant        none
 // ==/UserScript==
 
-let url = "wss://ru.wotblitz.com/tournament-season/watch/1b7ecd13ab88460ca1c7d97735698ab3/";
+let url = "wss://watchblitz-ru.wotblitz.com/v1/groups/3/watch?token=4ba160b2-7561-46e4-ab9f-92286e4a3beb";
 let ws = null;
 function start(){
     ws = new WebSocket(url);
     ws.onopen = onopen;
     ws.onmessage = onmessage;
 }
-function send() { ws.send('{\"command\":\"watching\"}'); }
-function onopen() { ws.send('{\"command\":\"close\"}'); }
+function send() { ws.send('{\"operation\":\"watching\"}'); }
+function onopen() { ws.send('{\"operation\":\"close\"}'); }
 function onmessage(msg) {
     let t = JSON.parse(msg.data).data;
     document.title = t + " сек";
