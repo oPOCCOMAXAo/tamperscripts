@@ -27,8 +27,7 @@ function watch(url) {
 }
 
 async function getToken() {
-  let res = await AsyncXHR.request("POST", "https://ru.wotblitz.com/ru/api/watch-blitz/v1/user/", "{}", { "Content-Type": "application/json" });
-  return res.object.token;
+  return (await AsyncXHR.request("POST", "https://ru.wotblitz.com/ru/api/watch-blitz/v1/user/", "{}", { "Content-Type": "application/json" })).object.token;
 }
 
 async function getStreams() {
