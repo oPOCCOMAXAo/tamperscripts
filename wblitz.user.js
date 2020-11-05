@@ -5,11 +5,10 @@
 // @description  run blitz stream
 // @author       oPOCCOMAXAo
 // @match        https://ru.wotblitz.com/*
-// @require      https://raw.githubusercontent.com/oPOCCOMAXAo/jslib/master/asyncxhr.js
+// @require      https://opoccomaxao.github.io/tamperscripts/asyncxhr.js
 // @grant        none
 // ==/UserScript==
 /*global AsyncXHR*/
-const gebi = id => document.getElementById(id);
 const localeOffset = new Date().getTimezoneOffset() * 60000;
 let token;
 let table;
@@ -53,14 +52,14 @@ class Watch {
 }
 
 function updateTime(id, time) {
-  let el = gebi(`time-${id}`);
+  let el = document.getElementById(`time-${id}`);
   if (el) el.innerHTML = time;
 }
 
 function updateControls(id, started) {
-  let el = gebi(`start-${id}`);
+  let el = document.getElementById(`start-${id}`);
   if (el) el.disabled = started;
-  el = gebi(`stop-${id}`);
+  el = document.getElementById(`stop-${id}`);
   if (el) el.disabled = !started;
 }
 

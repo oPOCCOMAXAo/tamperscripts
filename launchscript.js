@@ -1,0 +1,1 @@
+javascript:(["https://opoccomaxao.github.io/tamperscripts/asyncxhr.js", "https://opoccomaxao.github.io/tamperscripts/wblitz.user.js"].forEach(s=>{let a=document.createElement("script");a.src=s;document.head.appendChild(a);}));
