@@ -10,6 +10,7 @@
 // ==/UserScript==
 /*global AsyncXHR*/
 const gebi = id => document.getElementById(id);
+const localeOffset = new Date().getTimezoneOffset() * 60000;
 let token;
 let table;
 let watches = {};
@@ -86,7 +87,8 @@ function makeUIstart() {
 
 function formatDate(date) {
   let d = new Date(date);
-  return `${d.getDay().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+  d = new Date(d.getTime() - localeOffset);
+  return `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
 }
 
 function makeElement(tag, props, listeners) {
