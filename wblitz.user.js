@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         wblitz stream collector
 // @namespace    http://tampermonkey.net/
-// @version      0.15
+// @version      0.16
 // @description  run blitz stream
 // @author       oPOCCOMAXAo
 // @match        https://ru.wotblitz.com/*
 // @grant        none
 // ==/UserScript==
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 const localeOffset = new Date().getTimezoneOffset() * 60000;
 let token;
 let table;
@@ -121,24 +122,47 @@ function updateControls(id, started) {
 }
 
 async function getToken() {
-  return (await AsyncXHR.request("POST", "https://ru.wotblitz.com/ru/api/watch-blitz/v1/user/", "{}", { "Content-Type": "application/json" })).object.token;
+  while (true) {
+    let res = await AsyncXHR.request("POST", "https://ru.wotblitz.com/ru/api/watch-blitz/v1/user/", "{}", { "Content-Type": "application/json" });
+    if (res.status === 200) {
+      return res.object.token;
+    } else {
+      await sleep(5000);
+    }
+  }
 }
 
 async function getStreams() {
-  return (await AsyncXHR.get("https://ru.wotblitz.com/ru/api/watch-blitz/v1/streams")).object;
+  while (true) {
+    let res = await AsyncXHR.get("https://ru.wotblitz.com/ru/api/watch-blitz/v1/streams");
+    if (res.status === 200) {
+      return res.object;
+    } else {
+      await sleep(5000);
+    }
+  }
 }
 
 function makeStyle() {
   let style = document.createElement("style");
   style.innerHTML = `
-#startbtn {opacity:0.7;position:fixed;top:1em;left:1em;z-index:1000;}
+#startbtn {opacity:0.7;position:fixed;top:3em;left:1em;z-index:1000;}
+#startstage {background-color:white;color:black;opacity:0.7;position:fixed;top:0em;left:0em;z-index:1000;padding:0.5em;}
 td, th {padding:0.2em;}
 `;
   document.head.appendChild(style);
 }
 
 function makeUIstart() {
-  document.body.appendChild(makeElement("button", { id: "startbtn", innerHTML: "Start!" }, { click: makeUIfinal }));
+  document.body.appendChild(makeElement("div", {
+    id: "startstage",
+    innerHTML: "Получение токена ...",
+  }));
+  document.body.appendChild(makeElement("button", {
+    id: "startbtn",
+    innerHTML: "Start!",
+    disabled: true,
+  }, { click: makeUIfinal }));
 }
 
 function formatDate(date) {
@@ -222,24 +246,32 @@ function makeUIfinal() {
   }
 }
 
+function setStage(text) {
+  let el = document.getElementById("startstage");
+  if (el) el.innerHTML = text;
+}
+
 async function start() {
+  makeStyle();
+  makeUIstart();
+
   // получение токена, проверка авторизации
   token = await getToken();
   if (token == null) {
-    alert("Авторизуйся и обнови");
+    setStage("Авторизуйся и обнови");
     return;
   }
 
   // получение стримов, фильтр нужных
   let streams = (await getStreams()).result.filter(s => s.end_at == null);
   if (streams.length === 0) {
-    alert("Сорян, стримов нет");
+    setStage("Стримов нет");
     return;
   }
   table = makeTable(streams);
 
-  makeStyle();
-  makeUIstart();
+  setStage("Всё готово");
+  document.getElementById("startbtn").disabled = false;
 }
 
 window.start = start;
