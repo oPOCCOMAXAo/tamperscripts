@@ -21,7 +21,7 @@ async function getToken() {
   while (true) {
     let res = await request("https://ru.wotblitz.com/ru/api/watch-blitz/v1/user/", "{}");
     if (res.status === 200) {
-      return JSON.parse(res.text).object.token;
+      return JSON.parse(res.text).token;
     }
     await sleep(5000);
   }
