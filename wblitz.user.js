@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         wblitz stream collector
 // @namespace    http://tampermonkey.net/
-// @version      0.16
+// @version      0.16.1
 // @description  run blitz stream
 // @author       oPOCCOMAXAo
 // @match        https://ru.wotblitz.com/*
@@ -134,7 +134,7 @@ async function getToken() {
 
 async function getStreams() {
   while (true) {
-    let res = await AsyncXHR.get("https://ru.wotblitz.com/ru/api/watch-blitz/v1/streams");
+    let res = await AsyncXHR.get("https://ru.wotblitz.com/ru/api/watch-blitz/v1/streams/");
     if (res.status === 200) {
       return res.object;
     } else {
@@ -198,17 +198,16 @@ function makeTable(streams) {
   table.appendChild(row);
 
   for (let stream of streams) {
-    let id = stream.stream_group_id;
+    let { stream_group_id: id } = stream;
     row = makeElement("tr");
 
     row.appendChild(makeElement("td", { innerHTML: stream.title }));
 
     row.appendChild(makeElement("td", { innerHTML: formatDate(stream.start_at) }));
 
-    let maxTime = Math.max(...(stream.rewards.map(a => a.max_amount / a.reward_amount * a.time)));
+    let maxTime = Math.max(0, ...(stream.rewards.map(a => a.max_amount / a.reward_amount * a.time)));
     row.appendChild(makeElement("td", {
       id: `time-${id}`,
-      "data-max": maxTime,
       innerHTML: "0",
     }));
 
