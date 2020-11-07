@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         wblitz stream collector
 // @namespace    http://tampermonkey.net/
-// @version      0.16.1
+// @version      0.16.2
 // @description  run blitz stream
 // @author       oPOCCOMAXAo
 // @match        https://ru.wotblitz.com/*
@@ -75,29 +75,47 @@ class AsyncXHR {
 class Watch {
   /** @type {WebSocket} */
   socket = null;
+  timer = null;
 
   constructor(id, maxTime = 86400) {
     this.id = id;
     this.maxTime = maxTime;
+    this.time = 0;
   }
+
+  #onClose = () => {
+    clearInterval(this.timer);
+    if (this.socket != null) this.start();
+  };
+
+  #onMessage = msg => {
+    try {
+      msg = JSON.parse(msg.data);
+    } catch (e) {
+      msg = {};
+    }
+    this.time = msg.time;
+    if (msg.detail === "Invalid token") {
+      this.stop(true);
+    } else if (this.time > this.maxTime) {
+      this.stop();
+    }
+  };
+
+  #onOpen = () => {
+    this.socket.send("{\"operation\":\"close\"}");
+    this.socket.send("{\"operation\":\"watching\"}");
+    this.timer = setInterval(this.#watchTick, 4500);
+  };
+
+  #watchTick = () => this.socket.send("{\"operation\":\"watching\"}");
 
   start() {
     if (this.socket != null) return;
-    let timer;
     this.socket = new WebSocket(`wss://watchblitz-ru.wotblitz.com/v1/groups/${this.id}/watch?token=${token}`);
-    this.socket.onopen = this.socket.send.bind(this.socket, "{\"operation\":\"close\"}");
-    this.socket.onmessage = msg => {
-      let t = JSON.parse(msg.data).time;
-      updateTime(this.id, t);
-      if (t > this.maxTime) {
-        this.stop();
-      }
-    };
-    this.socket.onclose = () => {
-      clearInterval(timer);
-      if (this.socket != null) this.start();
-    };
-    timer = setInterval(this.socket.send.bind(this.socket, "{\"operation\":\"watching\"}"), 4500);
+    this.socket.onopen = this.#onOpen;
+    this.socket.onmessage = this.#onMessage;
+    this.socket.onclose = this.#onClose;
     updateControls(this.id, true);
   }
 
