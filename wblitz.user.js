@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         wblitz stream collector
 // @namespace    http://tampermonkey.net/
-// @version      0.16.2
+// @version      0.17.1
 // @description  run blitz stream
 // @author       oPOCCOMAXAo
 // @match        https://ru.wotblitz.com/*
 // @grant        none
 // ==/UserScript==
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+const RESTART_TIME = 10000;
 const localeOffset = new Date().getTimezoneOffset() * 60000;
 let token;
 let table;
@@ -83,9 +84,15 @@ class Watch {
     this.time = 0;
   }
 
-  #onClose = () => {
+  #onClose = async () => {
     clearInterval(this.timer);
-    if (this.socket != null) this.start();
+    if (this.socket != null) {
+      await this.stop();
+      if (this.time > 0) {
+        await sleep(RESTART_TIME);
+        this.start();
+      }
+    }
   };
 
   #onMessage = msg => {
@@ -96,10 +103,11 @@ class Watch {
     }
     this.time = msg.time;
     if (msg.detail === "Invalid token") {
-      this.stop(true);
+      this.stop(true).catch(console.error);
     } else if (this.time > this.maxTime) {
-      this.stop();
+      this.stop().catch(console.error);
     }
+    updateTime(this.id, this.time);
   };
 
   #onOpen = () => {
@@ -119,11 +127,14 @@ class Watch {
     updateControls(this.id, true);
   }
 
-  stop() {
+  async stop(resetToken = false) {
     let s = this.socket;
     this.socket = null;
     s.close();
     updateControls(this.id, false);
+    if (resetToken && await updateToken()) {
+      this.start();
+    }
   }
 }
 
@@ -174,7 +185,7 @@ td, th {padding:0.2em;}
 function makeUIstart() {
   document.body.appendChild(makeElement("div", {
     id: "startstage",
-    innerHTML: "Получение токена ...",
+    innerHTML: "Инициализация ...",
   }));
   document.body.appendChild(makeElement("button", {
     id: "startbtn",
@@ -268,16 +279,23 @@ function setStage(text) {
   if (el) el.innerHTML = text;
 }
 
+/** @return {Promise<boolean>} */
+async function updateToken() {
+  // получение токена, проверка авторизации
+  setStage("Получение токена ...");
+  token = await getToken();
+  if (token == null) {
+    setStage("Авторизуйся и обнови");
+    return false;
+  }
+  return true;
+}
+
 async function start() {
   makeStyle();
   makeUIstart();
 
-  // получение токена, проверка авторизации
-  token = await getToken();
-  if (token == null) {
-    setStage("Авторизуйся и обнови");
-    return;
-  }
+  if (!await updateToken()) return;
 
   // получение стримов, фильтр нужных
   let streams = (await getStreams()).result.filter(s => s.end_at == null);
