@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         wblitz stream collector
 // @namespace    http://tampermonkey.net/
-// @version      0.17.2
+// @version      0.17.3
 // @description  run blitz stream
 // @author       oPOCCOMAXAo
 // @match        https://ru.wotblitz.com/*
@@ -151,9 +151,10 @@ function updateControls(id, started) {
 }
 
 async function getToken() {
+  const statuses = [200, 422];
   while (true) {
     let res = await AsyncXHR.request("POST", "https://ru.wotblitz.com/ru/api/watch-blitz/v1/user/", "{}", { "Content-Type": "application/json" });
-    if (res.status === 200) {
+    if (statuses.includes(res.status)) {
       return res.object.token;
     } else {
       await sleep(5000);
