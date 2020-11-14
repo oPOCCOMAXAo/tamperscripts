@@ -1,14 +1,13 @@
 // ==UserScript==
 // @name         wblitz stream collector
 // @namespace    http://tampermonkey.net/
-// @version      0.17.3
+// @version      0.18.1
 // @description  run blitz stream
 // @author       oPOCCOMAXAo
 // @match        https://ru.wotblitz.com/*
 // @grant        none
 // ==/UserScript==
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const RESTART_TIME = 10000;
 const localeOffset = new Date().getTimezoneOffset() * 60000;
 let token;
 let table;
@@ -74,8 +73,6 @@ class AsyncXHR {
 }
 
 class Watch {
-  /** @type {WebSocket} */
-  socket = null;
   timer = null;
 
   constructor(id, maxTime = 86400) {
@@ -84,25 +81,10 @@ class Watch {
     this.time = 0;
   }
 
-  _onClose = async () => {
-    clearInterval(this.timer);
-    if (this.socket != null) {
-      await this.stop();
-      if (this.time > 0) {
-        await sleep(RESTART_TIME);
-        this.start();
-      }
-    }
-  };
-
-  _onMessage = msg => {
-    try {
-      msg = JSON.parse(msg.data);
-    } catch (e) {
-      msg = {};
-    }
-    this.time = msg.time;
-    if (msg.detail === "Invalid token") {
+  _onResult = result => {
+    result = result.object;
+    this.time = result.time;
+    if (result.detail === "Invalid token") {
       this.stop(true).catch(console.error);
     } else if (this.time > this.maxTime) {
       this.stop().catch(console.error);
@@ -110,27 +92,22 @@ class Watch {
     updateTime(this.id, this.time);
   };
 
-  _onOpen = () => {
-    this.socket.send("{\"operation\":\"close\"}");
-    this.socket.send("{\"operation\":\"watching\"}");
-    this.timer = setInterval(this._watchTick, 4500);
-  };
-
-  _watchTick = () => this.socket.send("{\"operation\":\"watching\"}");
+  _watchTick = () => void (AsyncXHR
+    .get(`https://watchblitz-ru-ws.wotblitz.com/v1/groups/${this.id}/watch?token=${token}&operation=watching`)
+    .then(this._onResult)
+    .catch(console.error));
 
   start() {
-    if (this.socket != null) return;
-    this.socket = new WebSocket(`wss://watchblitz-ru.wotblitz.com/v1/groups/${this.id}/watch?token=${token}`);
-    this.socket.onopen = this._onOpen;
-    this.socket.onmessage = this._onMessage;
-    this.socket.onclose = this._onClose;
+    if (this.timer != null) return;
+    AsyncXHR.get(`https://watchblitz-ru-ws.wotblitz.com/v1/groups/${this.id}/watch?token=${token}&operation=close`).then(this._onResult);
+    this.timer = setInterval(this._watchTick, 30000);
+    this._watchTick();
     updateControls(this.id, true);
   }
 
   async stop(expired = false) {
-    let s = this.socket;
-    this.socket = null;
-    s.close();
+    clearInterval(this.timer);
+    this.timer = null;
     updateControls(this.id, false);
     if (expired && await updateToken()) {
       this.start();
