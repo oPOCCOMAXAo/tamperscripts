@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         wblitz stream collector
 // @namespace    http://tampermonkey.net/
-// @version      0.18.1
+// @version      0.18.2
 // @description  run blitz stream
 // @author       oPOCCOMAXAo
 // @match        https://ru.wotblitz.com/*
@@ -74,11 +74,11 @@ class AsyncXHR {
 
 class Watch {
   timer = null;
+  time = 0;
 
   constructor(id, maxTime = 86400) {
     this.id = id;
     this.maxTime = maxTime;
-    this.time = 0;
   }
 
   _onResult = result => {
@@ -92,15 +92,15 @@ class Watch {
     updateTime(this.id, this.time);
   };
 
-  _watchTick = () => void (AsyncXHR
-    .get(`https://watchblitz-ru-ws.wotblitz.com/v1/groups/${this.id}/watch?token=${token}&operation=watching`)
+  _watchTick = (close = false) => void (AsyncXHR
+    .get(`https://watchblitz-ru-ws.wotblitz.com/v1/groups/${this.id}/watch?token=${token}&operation=${close ? "close" : "watching"}`)
     .then(this._onResult)
     .catch(console.error));
 
   start() {
     if (this.timer != null) return;
-    AsyncXHR.get(`https://watchblitz-ru-ws.wotblitz.com/v1/groups/${this.id}/watch?token=${token}&operation=close`).then(this._onResult);
     this.timer = setInterval(this._watchTick, 30000);
+    this._watchTick(true);
     this._watchTick();
     updateControls(this.id, true);
   }
@@ -234,7 +234,7 @@ function makeTable(streams) {
       innerHTML: "■",
       disabled: true,
     }, {
-      click: watch.stop.bind(watch),
+      click: watch.stop.bind(watch, false),
     }));
     watches[id] = watch;
 
