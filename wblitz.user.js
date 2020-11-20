@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         wblitz stream collector
 // @namespace    http://tampermonkey.net/
-// @version      0.18.3
+// @version      0.18.4
 // @description  run blitz stream
 // @author       oPOCCOMAXAo
 // @match        https://ru.wotblitz.com/*
@@ -86,7 +86,7 @@ class Watch {
     this.time = result.time;
     if (result.detail === "Invalid token") {
       this.stop(true).catch(console.error);
-    } else if (this.time > this.maxTime) {
+    } else if (this.time > this.maxTime && this.timer !== null) {
       this.stop().catch(console.error);
     }
     updateTime(this.id, this.time);
