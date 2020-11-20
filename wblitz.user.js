@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         wblitz stream collector
 // @namespace    http://tampermonkey.net/
-// @version      0.18.2
+// @version      0.18.3
 // @description  run blitz stream
 // @author       oPOCCOMAXAo
 // @match        https://ru.wotblitz.com/*
@@ -107,6 +107,7 @@ class Watch {
 
   async stop(expired = false) {
     clearInterval(this.timer);
+    this._watchTick(true);
     this.timer = null;
     updateControls(this.id, false);
     if (expired && await updateToken()) {
