@@ -23,8 +23,18 @@ function GM_addStyle(css) {
     sheet.insertRule(css, (sheet.rules || sheet.cssRules || []).length);
 }
 
-GM_addStyle(`.text-left{max-width: max-content;}`);
-GM_addStyle(`.site-header.mobile{display:none;}`);
+GM_addStyle(`.text-left {
+    max-width: 100%;
+    margin: 0;
+    width: 100%;
+}`);
+GM_addStyle(`.text-left img {width: 100%;}`);
+GM_addStyle(`.site-header.mobile {display:none;}`);
+GM_addStyle(`.container {
+    max-width: 100%;
+    margin: 0;
+    width: 100%;
+}`);
 
 async function onReady() {
     document
